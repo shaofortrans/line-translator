@@ -12,7 +12,7 @@ handler = WebhookHandler("bf4c37f1323066edae7b010679cb9994")
 genai.configure(api_key="AIzaSyCPzNVbAH309c1wEyWrufQJRZ7mnX3swN8")
 
 # 修改點：直接寫名字，不要加 models/ 也不要加 v1beta
-model = genai.GenerativeModel("gemini-1.5-flash-latest")
+model = genai.GenerativeModel("gemini-1.5-flash")
 
 @app.route("/callback", methods=["POST"])
 def callback():
