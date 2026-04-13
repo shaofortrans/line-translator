@@ -34,7 +34,7 @@ except Exception as e:
         else:
             reply = "翻譯失敗"
 
-    return "OK"
+return "OK"
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
