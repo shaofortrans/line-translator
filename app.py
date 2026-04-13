@@ -27,12 +27,9 @@ try:
         # 這邊是原本的 handler.handle 內容
         handler.handle(body, signature)
 except Exception as e:
-        # 這邊是處理錯誤的內容，必須跟 try 對齊
         print("Gemini錯誤:", e)
-        if "quota" in str(e).lower():
-            reply = "今天額度用完了 🥰"
-        else:
-            reply = "翻譯失敗"
+        reply = f"錯誤細節: {str(e)}" # 改成這樣，LINE 就會告訴你真正的原因
+
 
 return "OK"
 
