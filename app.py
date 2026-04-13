@@ -23,14 +23,16 @@ def callback():
     signature = request.headers["X-Line-Signature"]
     body = request.get_data(as_text=True)
 
-    try:
+try:
+        # 這邊是原本的 handler.handle 內容
         handler.handle(body, signature)
 except Exception as e:
-    print("Gemini錯誤:", e)
-    if "quota" in str(e).lower():
-        reply = "今天額度用完了😅"
-    else:
-        reply = "翻譯失敗"
+        # 這邊是處理錯誤的內容，必須跟 try 對齊
+        print("Gemini錯誤:", e)
+        if "quota" in str(e).lower():
+            reply = "今天額度用完了 🥰"
+        else:
+            reply = "翻譯失敗"
 
     return "OK"
 
