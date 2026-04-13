@@ -35,7 +35,8 @@ def callback():
 def handle_message(event):
     text = event.message.text
 
-    prompt = f"""請把下面句子翻成另一種語言：
+    prompt = f"""
+請把下面句子翻成另一種語言：
 - 中文 → 印尼文
 - 印尼文 → 中文
 只輸出翻譯結果
@@ -43,17 +44,17 @@ def handle_message(event):
 {text}
 """
 
-try:
-    response = model.generate_content(prompt)
-    reply = response.text.strip()
-
-except Exception as e:
-    print("Gemini錯誤:", e)
-    reply = "今天翻譯額度用完了😅"
+    try:
+        response = model.generate_content(prompt)
+        reply = response.text.strip()
+    except Exception as e:
+        print("Gemini錯誤:", e)
+        if "quota" in str(e).lower():
+            reply = "今天額度用完了😅"
+        else:
+            reply = "翻譯失敗"
 
     line_bot_api.reply_message(
         event.reply_token,
         TextSendMessage(text=reply)
     )
-if __name__ == "__main__":
-    app.run(port=5000)
