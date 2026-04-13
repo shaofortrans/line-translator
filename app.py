@@ -43,12 +43,13 @@ def handle_message(event):
 {text}
 """
 
-    try:
-        response = model.generate_content(prompt)
-        reply = response.text.strip()
-    except Exception as e:
-        print("Gemini錯誤:", e)
-        reply = "翻譯失敗"
+try:
+    response = model.generate_content(prompt)
+    reply = response.text.strip()
+
+except Exception as e:
+    print("Gemini錯誤:", e)
+    reply = "今天翻譯額度用完了😅"
 
     line_bot_api.reply_message(
         event.reply_token,
