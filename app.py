@@ -20,18 +20,20 @@ model = genai.GenerativeModel("models/gemini-1.5-flash")
 # ====== Webhook ======
 @app.route("/callback", methods=["POST"])
 def callback():
+    # 第一層縮進：這裡前面有 4 個空格
     signature = request.headers["X-Line-Signature"]
     body = request.get_data(as_text=True)
 
-try:
-        # 這邊是原本的 handler.handle 內容
+    try:
+        # 第二層縮進：這裡前面有 8 個空格
         handler.handle(body, signature)
-except Exception as e:
+    except Exception as e:
         print("Gemini錯誤:", e)
-        reply = f"錯誤細節: {str(e)}" # 改成這樣，LINE 就會告訴你真正的原因
-
-
-return "OK"
+        # 把這行改掉，讓 LINE 吐出真正的錯誤訊息
+        reply = f"錯誤細節：{str(e)}"
+    # 重點：這一行必須跟上面的 signature 對齊（前面 4 個空格）
+    # 不能靠最左邊，否則會報 "outside function" 錯誤
+    return "OK"
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
