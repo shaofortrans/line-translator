@@ -14,7 +14,7 @@ import os
 import google.generativeai as genai
 
 # 1. 從環境變數抓取鑰匙，存入 api_key 變數
-api_key = os.environ.get("AIzaSyCPzNVbAH309c1wEyWrufQJRZ7mnX3swN8")
+api_key = os.environ.get("GEMINI_API_KEY")
 
 # 2. 正式配置連線，並加上 transport='rest' 確保傳輸穩定
 genai.configure(api_key=api_key, transport='rest')
