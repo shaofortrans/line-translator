@@ -9,8 +9,8 @@ app = Flask(__name__)
 # ====== 設定區 (請確保留原本的 Key) ======
 line_bot_api = LineBotApi("cptrgr1pmub3Yl765OhATEF12kPACiEGUG0C6E1UFSRCi5ca1m8Hq40Odc1ssmyi7Q5BOavK7uZ/hftXbJL+6nRCQGXRvYAprF4Vx4jwUtYfbcTzaY+9zTRjiVeE1QkpAI1xk3RMdnQ+UK6bPZuQcQdB04t89/1O/w1cDnyilFU=")
 handler = WebhookHandler("bf4c37f1323066edae7b010679cb9994")
-genai.configure(api_key="AIzaSyCPzNVbAH309c1wEyWrufQJRZ7mnX3swN8")
-
+# 增加運算層級，強迫它抓對版本
+genai.configure(api_key="AIzaSyCPzNVbAH309c1wEyWrufQJRZ7mnX3swN8", transport='rest')
 # 修改點：直接寫名字，不要加 models/ 也不要加 v1beta
 model = genai.GenerativeModel("gemini-1.5-flash")
 
