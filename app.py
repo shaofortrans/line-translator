@@ -12,17 +12,15 @@ handler = WebhookHandler("bf4c37f1323066edae7b010679cb9994")
 # 增加運算層級，強迫它抓對版本
 import os
 import google.generativeai as genai
-
-# 1. 從環境變數抓取鑰匙，存入 api_key 變數
+# 1. 抓取鑰匙
 api_key = os.environ.get("GEMINI_API_KEY")
 
-# 2. 正式配置連線，並加上 transport='rest' 確保傳輸穩定
+# 2. 強制指定使用穩定版 (transport='rest' 能避開 v1beta 的路徑錯誤)
 genai.configure(api_key=api_key, transport='rest')
 
-# 3. 定義模型（確保名稱簡潔，不加 models/）
-model = genai.GenerativeModel(
-    model_name="gemini-1.5-flash"
-)
+# 3. 簡化模型名稱（直接寫名字，不要加 models/ 前綴）
+model = genai.GenerativeModel("gemini-1.5-flash")
+
 @app.route("/callback", methods=["POST"])
 def callback():
     signature = request.headers["X-Line-Signature"]
