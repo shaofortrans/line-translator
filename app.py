@@ -19,7 +19,7 @@ api_key = os.environ.get("GEMINI_API_KEY")
 genai.configure(api_key=api_key, transport='rest')
 
 # 3. 簡化模型名稱（直接寫名字，不要加 models/ 前綴）
-model = genai.GenerativeModel(model_name="models/gemini-1.5-flash")
+model = genai.GenerativeModel("gemini-1.5-flash-latest")
 
 @app.route("/callback", methods=["POST"])
 def callback():
