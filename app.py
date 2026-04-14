@@ -11,6 +11,7 @@ line_bot_api = LineBotApi("cptrgr1pmub3Yl765OhATEF12kPACiEGUG0C6E1UFSRCi5ca1m8Hq
 handler = WebhookHandler("bf4c37f1323066edae7b010679cb9994")
 # 增加運算層級，強迫它抓對版本
 genai.configure(api_key=os.environ.get("AIzaSyCPzNVbAH309c1wEyWrufQJRZ7mnX3swN8"), transport='rest')
+genai.configure(api_key=api_key)
 # 修改點：直接寫名字，不要加 models/ 也不要加 v1beta
 model = genai.GenerativeModel(
     model_name="gemini-1.5-flash"
