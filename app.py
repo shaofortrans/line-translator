@@ -1,47 +1,43 @@
 import os
 from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
+from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
-import google.generativeai as genai
+from deep_translator import GoogleTranslator
+from opencc import OpenCC
 
 app = Flask(__name__)
 
-# ====== 設定區 (請確保留原本的 Key) ======
-line_bot_api = LineBotApi("cptrgr1pmub3Yl765OhATEF12kPACiEGUG0C6E1UFSRCi5ca1m8Hq40Odc1ssmyi7Q5BOavK7uZ/hftXbJL+6nRCQGXRvYAprF4Vx4jwUtYfbcTzaY+9zTRjiVeE1QkpAI1xk3RMdnQ+UK6bPZuQcQdB04t89/1O/w1cDnyilFU=")
-handler = WebhookHandler("bf4c37f1323066edae7b010679cb9994")
-# 增加運算層級，強迫它抓對版本
-import os
-import google.generativeai as genai
-# 1. 抓取鑰匙
-api_key = os.environ.get("GEMINI_API_KEY")
+# LINE 設定
+line_bot_api = LineBotApi(os.environ.get("LINE_CHANNEL_ACCESS_TOKEN"))
+handler = WebhookHandler(os.environ.get("LINE_CHANNEL_SECRET"))
 
-# 2. 強制指定使用穩定版 (transport='rest' 能避開 v1beta 的路徑錯誤)
-genai.configure(api_key=api_key, transport='rest')
+# 初始化 OpenCC (s2twp: 簡轉繁 + 台灣用語)
+cc = OpenCC('s2twp')
 
-# 3. 簡化模型名稱（直接寫名字，不要加 models/ 前綴）
-model = genai.GenerativeModel("gemini-1.5-flash-latest")
+def get_translate(text):
+    try:
+        # 1. Google 翻譯
+        raw_translated = GoogleTranslator(source='auto', target='zh-TW').translate(text)
+        # 2. OpenCC 轉化台灣慣用語
+        return cc.convert(raw_translated)
+    except Exception as e:
+        return f"翻譯出錯了：{str(e)}"
 
-@app.route("/callback", methods=["POST"])
+@app.route("/callback", methods=['POST'])
 def callback():
-    signature = request.headers["X-Line-Signature"]
+    signature = request.headers['X-Line-Signature']
     body = request.get_data(as_text=True)
     try:
         handler.handle(body, signature)
-    except Exception as e:
-        print(f"Webhook錯誤: {e}")
-    return "OK"
+    except InvalidSignatureError:
+        abort(400)
+    return 'OK'
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     user_text = event.message.text
-    try:
-        # 呼叫 Gemini
-        response = model.generate_content(f"請將以下內容翻譯成中文：{user_text}")
-        reply_text = response.text
-    except Exception as e:
-        # 回傳詳細錯誤，讓我們知道現在跑的是哪一版
-        reply_text = f"連線成功但Gemini報錯：{str(e)}"
-
+    reply_text = get_translate(user_text)
     line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
 
 if __name__ == "__main__":
