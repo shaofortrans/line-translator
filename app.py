@@ -17,22 +17,19 @@ cc = OpenCC('s2twp')
 
 def get_translate(text):
     try:
-        # 1. 先偵測語言 (或是簡單判斷：如果裡面有中文，目標就是印尼文)
-        # 我們用一個簡單的邏輯：如果有中文字，就翻印尼語
+        # 加上這個記號，如果 LINE 回傳有看到這兩個字，才代表 Render 真的更新了
+        debug_tag = "(新版) " 
+        
         has_chinese = any('\u4e00' <= char <= '\u9fff' for char in text)
         
         if has_chinese:
-            # 中文 -> 印尼文
-            translated = GoogleTranslator(source='auto', target='id').translate(text)
-            return translated
+            res = GoogleTranslator(source='auto', target='id').translate(text)
+            return debug_tag + res
         else:
-            # 其他語言 -> 繁體中文
-            raw_translated = GoogleTranslator(source='auto', target='zh-TW').translate(text)
-            # 依然加上 OpenCC 確保台灣用語習慣
-            return cc.convert(raw_translated)
-            
+            raw = GoogleTranslator(source='auto', target='zh-TW').translate(text)
+            return debug_tag + cc.convert(raw)
     except Exception as e:
-        return f"翻譯出錯：{str(e)}"
+        return f"錯誤：{str(e)}"
 
 @app.route("/callback", methods=['POST'])
 def callback():
