@@ -17,32 +17,22 @@ cc = OpenCC('s2twp')
 
 def get_translate(text):
     try:
-        # 我們直接偵測這段文字「最像」哪種語言
-        # 這裡不需要 debug_tag 了，我們追求一次到位
+        # 定義：如果裡面包含中文字符，就視為中文
+        import re
+        # 這是最暴力的正規表達式，專門抓中文字
+        is_chinese = bool(re.search(r'[\u4e00-\u9fff]', text))
         
-        from deep_translator import GoogleTranslator
-        
-        # 建立一個偵測器（這不需要 Key）
-        # 邏輯：如果你傳中文或英文，它會翻成印尼文 (id)
-        #      如果你傳印尼文，它會翻成繁體中文 (zh-TW)
-        
-        # 我們先試著把它翻成繁體中文
-        translated_to_zh = GoogleTranslator(source='auto', target='zh-TW').translate(text)
-        
-        # 如果翻譯出來的結果跟原本的一模一樣（代表原本就是中文）
-        # 或者原本的文字裡有中文字，那我們就強制翻成印尼文
-        has_chinese = any('\u4e00' <= char <= '\u9fff' for char in text)
-        
-        if has_chinese:
-            # 強制中翻印
-            return GoogleTranslator(source='zh-CN', target='id').translate(text)
+        if is_chinese:
+            # 確定是中文 -> 翻成印尼文
+            return GoogleTranslator(source='zh-TW', target='id').translate(text)
         else:
-            # 可能是印尼文或英文 -> 翻成繁體中文
-            return cc.convert(translated_to_zh)
-
+            # 不是中文 -> 翻成繁體中文
+            raw = GoogleTranslator(source='auto', target='zh-TW').translate(text)
+            return cc.convert(raw)
+            
     except Exception as e:
-        return f"翻譯出錯：{str(e)}"
-
+        return f"報錯了：{str(e)}"
+        
 @app.route("/callback", methods=['POST'])
 def callback():
     signature = request.headers['X-Line-Signature']
