@@ -8,21 +8,21 @@ from opencc import OpenCC
 
 app = Flask(__name__)
 
-# LINE 設定
+# LINE 設定 (這些環境變數你原本就在 Render 設定好了，不用動)
 line_bot_api = LineBotApi(os.environ.get("LINE_CHANNEL_ACCESS_TOKEN"))
 handler = WebhookHandler(os.environ.get("LINE_CHANNEL_SECRET"))
 
-# 初始化 OpenCC (s2twp: 簡轉繁 + 台灣用語)
+# 初始化 OpenCC (s2twp: 簡轉繁 + 台灣用語修正)
 cc = OpenCC('s2twp')
 
 def get_translate(text):
     try:
-        # 1. Google 翻譯
+        # 使用 Google 翻譯 (免 Key 穩定版)
         raw_translated = GoogleTranslator(source='auto', target='zh-TW').translate(text)
-        # 2. OpenCC 轉化台灣慣用語
+        # 轉換為台灣在地用語
         return cc.convert(raw_translated)
     except Exception as e:
-        return f"翻譯出錯了：{str(e)}"
+        return f"翻譯出錯：{str(e)}"
 
 @app.route("/callback", methods=['POST'])
 def callback():
