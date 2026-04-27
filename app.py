@@ -15,23 +15,36 @@ handler = WebhookHandler(os.environ.get("LINE_CHANNEL_SECRET"))
 # 初始化 OpenCC (s2twp: 簡轉繁 + 台灣用語修正)
 cc = OpenCC('s2twp')
 
+import time
+import re
+
 def get_translate(text):
-    try:
-        # 定義：如果裡面包含中文字符，就視為中文
-        import re
-        # 這是最暴力的正規表達式，專門抓中文字
-        is_chinese = bool(re.search(r'[\u4e00-\u9fff]', text))
-        
-        if is_chinese:
-            # 確定是中文 -> 翻成印尼文
-            return GoogleTranslator(source='zh-TW', target='id').translate(text)
-        else:
-            # 不是中文 -> 翻成繁體中文
-            raw = GoogleTranslator(source='auto', target='zh-TW').translate(text)
-            return cc.convert(raw)
+    # 嘗試 3 次
+    for i in range(3):
+        try:
+            # 判斷中文字的正則表達式
+            is_chinese = bool(re.search(r'[\u4e00-\u9fff]', text))
             
-    except Exception as e:
-        return f"報錯了：{str(e)}"
+            if is_chinese:
+                # 中翻印
+                res = GoogleTranslator(source='zh-TW', target='id').translate(text)
+            else:
+                # 印/英翻中
+                raw = GoogleTranslator(source='auto', target='zh-TW').translate(text)
+                res = cc.convert(raw)
+            
+            # 只要有拿到東西就回傳
+            if res and len(res.strip()) > 0:
+                return res
+                
+        except Exception as e:
+            # 失敗了就等 0.5 秒再試，這時候伺服器可能正在變快
+            print(f"嘗試第 {i+1} 次失敗...")
+            time.sleep(0.5)
+            continue
+            
+    # 如果 3 次都失敗，回傳一個特定的「喚醒中」訊息
+    return "（機器人暖機中，請再試一次這句！）"
         
 @app.route("/callback", methods=['POST'])
 def callback():
@@ -44,10 +57,17 @@ def callback():
     return 'OK'
 
 @handler.add(MessageEvent, message=TextMessage)
+@handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     user_text = event.message.text
+    
+    # 取得翻譯結果
     reply_text = get_translate(user_text)
+    
+    # 如果真的不幸連重試都失敗，回傳一個溫馨提示
+    if not reply_text:
+        reply_text = "抱歉，我剛睡醒腦袋還沒轉過來... 請再對我說一次！"
+        
     line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
-
 if __name__ == "__main__":
     app.run()
